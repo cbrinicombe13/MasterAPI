@@ -16,17 +16,27 @@ $pdo = $db->connect();
 
 $user = json_decode(file_get_contents('php://input'));
 $newUser = new User($pdo, $user->username, $user->pwd, $user->email);
+
 $details = $newUser->getDetails();
+$checkUser = $newUser->getSingleUser()->fetch(PDO::FETCH_ASSOC);
 
-if(isset($newUser)) {
-    $mail = new Mail();
+if($checkUser) {
+    extract($checkUser);
     echo json_encode(array(
-        'created' => $newUser->createUser(),
-        'authenticationSent' => $mail->sendAuthentication($details['username'], $details['email'])
+        'error' => "Username '".$username."' already exists."
     ));
-
+    return;
 } else {
-    echo json_encode(array(
-        'error' => 'No details were passed.'
-    ));
+    $mail = new Mail();
+    if($newUser->createUser()) {
+        echo json_encode(array(
+            'created' => 1,
+            'authenticationSent' => $mail->sendAuthentication($details['username'], $details['email'])
+        ));
+    } else {
+        echo json_encode(array(
+            'error' => 'Could not create user.'
+        ));
+    }
+    return;
 }

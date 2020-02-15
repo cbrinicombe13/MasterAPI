@@ -33,6 +33,7 @@ class Mail {
             return false;
         }
     }
+
 }
 
     

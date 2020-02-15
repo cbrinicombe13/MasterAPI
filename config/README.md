@@ -1,15 +1,42 @@
-All tables stored in 'MasterAPI'
+All tables stored in 'MasterAPI':
 
     Users table:
 
         Store the following: 
 
             id (auto_increment), username, email, pwd
-            Create new User
-            Send authentication email
 
-    1 table per user for contacts storing:
+        Actions:
 
-            contactID, bookID, first name, last name, age, occupation, phone, email, address,
+            getUsers: no input
+                      returns object or error message
 
-            Then sorted on front end by bookID then by contactID.
+            getSingleUser: username input in body
+                           returns object or error message
+
+            createUser: username, email, pwd input in body
+                        returns array(
+                            'created' => boolean
+                            'authenticationSent' => boolean
+                        ) or error message
+
+            deleteUser: username input in body
+                        returns array(
+                            'deleted' => boolean
+                        ) or error message
+
+            TODO: 
+
+                passwordReset
+                updateDetails
+                reauthenticate
+
+    -------------------------------------------------------------------------------------
+
+    Contacts table (1 per user):
+
+        Store the following:
+
+            contactID, bookID, first name, last name, age, occupation, phone, email, address
+
+            Sorted by bookID then by contactID.

@@ -7,7 +7,7 @@ class User {
     private $email;
     private $conn; // from PDO
 
-    function __construct($pdo, $username, $pwd, $email) {
+    function __construct($pdo, $username = null, $pwd = null, $email = null) {
         $this->conn = $pdo;
         $this->username = strip_tags($username);
         $this->pwd = strip_tags($pwd);
@@ -24,10 +24,36 @@ class User {
     }
 
     // Commit all or nothing: 
-    function execAON($stmt, $params) {
+    function execAON($stmt, $params = []) {
         $this->conn->beginTransaction();
         $stmt->execute($params);
         $this->conn->commit();
+    }
+
+    // Read all users:
+    function getUsers() {
+        $query = 'SELECT * FROM Users';
+        $stmt = $this->conn->prepare($query);
+        try {
+            self::execAON($stmt);
+            return $stmt;
+        } catch(PDOException $e) {
+            echo 'Could not read users: '.$e;
+            return false;
+        }
+    }
+
+    // Read single user with username:
+    function getSingleUser() {
+        $query = 'SELECT * FROM Users WHERE username = :username';
+        $stmt = $this->conn->prepare($query);
+        try {
+            self::execAON($stmt, ['username' => $this->username]);
+            return $stmt;
+        } catch(PDOException $e) {
+            echo 'Could not read user '.$this->username.' : '.$e;
+            return false;
+        }
     }
 
     // New user:
@@ -35,7 +61,6 @@ class User {
         $query = 'INSERT INTO Users(username, pwd, email)
                         VALUES(:username, :pwd, :email)';
         $stmt = $this->conn->prepare($query);
-
         try {
             self::execAON($stmt, [
                 'username' => $this->username,
@@ -49,17 +74,17 @@ class User {
     }
 
     // Delete user:
-    function deleteUser($username, $pwd) {
-        $query = 'DELETE FROM Users WHERE username = :username AND pwd = :pwd';
+    function deleteUser() {
+        $query = 'DELETE FROM Users WHERE username = :username';
         $stmt = $this->conn->prepare($query);
-
         try {
             self::execAON($stmt, [
-                'username' => $this->username,
-                'pwd' => $this->pwd
+                'username' => $this->username
             ]);
+            return true;
         } catch (PDOException $e) {
-            throw $e;
+            echo 'User could not be deleted: '.$e;
+            return false;
         }
     }
 

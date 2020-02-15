@@ -12,17 +12,16 @@ include_once '../models/User.php';
 $db = new Database();
 $pdo = $db->connect();
 
-$user = json_decode(file_get_contents('php://input'));
-$newUser = new User($pdo, $user->username, $user->pwd, null);
-$details = $newUser->getDetails();
+$details = json_decode(file_get_contents('php://input'));
+$user = new User($pdo, $details->username);
+$checkUser = $user->getSingleUser()->fetch(PDO::FETCH_ASSOC);
 
-if(isset($newUser)) {
-    $newUser->deleteUser($details['username'], $details['pwd']);
+if($checkUser) {
     echo json_encode(array(
-        'deleted' => 1
+        'deleted' => $user->deleteUser()
     ));
-} else {
+} elseif(!$checkUser) {
     echo json_encode(array(
-        'deleted' => 0
+        'error' => "Could not find user '".$details->username."'."
     ));
 }
