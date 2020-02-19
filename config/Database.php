@@ -19,27 +19,59 @@ class Database {
             $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
             return $this->conn;
         } catch (PDOException $e) {
-            throw $e;
+            echo json_encode(array(
+                'error' => 'PDO error: '.$e->getMessage()
+            ));
         }
     }
 
     public function createUserTable() {
-        if(!isset($this->conn)) {
-            echo 'No connection';
-            return;
+        if(isset($this->conn)) {
+            try {
+                $query = 'CREATE TABLE IF NOT EXISTS Users (
+                    id int NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                    username varchar(100) NOT NULL,
+                    pwd varchar(100) NOT NULL,
+                    email varchar(100) NOT NULL
+                )';
+                $this->conn->exec($query);
+                return true;
+            } catch(PDOException $e) {
+                echo json_encode(array(
+                    'error' => 'PDO error: '.$e->getMessage()
+                ));
+                return false;
+            }
+        } else {
+            echo json_encode(array(
+                'error' => 'No connection'
+            ));
+            return false;
         }
 
-        $query = 'CREATE TABLE Users (
-            id varchar(20) NOT NULL PRIMARY KEY,
-            username varchar(100) NOT NULL,
-            pwd varchar(100) NOT NULL,
-            email varchar(100) NOT NULL
-        )';
-
-        if($this->conn->exec($query)) {
-            return true;
-        }
-        return false;
     }
 
+    public function createBooksTable() {
+        if(isset($this->conn)) {
+            try {
+                $query = 'CREATE TABLE IF NOT EXISTS Books (
+                    id int(10) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                    label text(20) NOT NULL,
+                    allowAccess varchar(100) NOT NULL
+                )';
+                $this->conn->exec($query);
+                return true;
+            } catch(PDOException $e) {
+                echo json_encode(array(
+                    'error' => 'PDO error: '.$e->getMessage()
+                ));
+                return false;
+            }
+        } else {
+            echo json_encode(array(
+                'error' => 'No connection'
+            ));
+            return false;
+        }
+    }
 }

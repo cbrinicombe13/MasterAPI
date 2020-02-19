@@ -33,6 +33,21 @@ All tables stored in 'MasterAPI':
 
     -------------------------------------------------------------------------------------
 
+    Books table:
+
+        Store the following:
+
+            id (auto_increment), allowAccess
+
+        Actions:
+
+            createBook: $username
+                Register new book in 'Books' table
+                Create new table with name 'label'.
+
+    -------------------------------------------------------------------------------------
+
+
     Contacts table (1 per user):
 
         Store the following:
