@@ -5,8 +5,8 @@ class Book {
     private $conn;
 
     // book params:
-    public $label;
-    public $allowAccess;
+    private $label;
+    private $allowAccess;
     
     public function __construct($db, $allowAccess, $label = '') {
         $this->conn = $db;

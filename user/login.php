@@ -8,6 +8,7 @@ header('Access-Control-Allow-Headers: Access-Control-Allow-Headers, Access-Contr
 
 include_once '../config/Database.php';
 include_once '../models/User.php';
+include_once '../models/Book.php';
 
 $db = new Database();
 $pdo = $db->connect();
@@ -19,11 +20,25 @@ $requestedUser = $user->getSingleUser();
 $details = $requestedUser->fetch(PDO::FETCH_ASSOC);
 if($details) {
     extract($details);
+
+    $book = new Book($pdo, $details['username']);
+    $requestBooks = $book->getBooks();
+    $numBooks = $requestBooks->rowCount();
+    $books = array();
+
+    while($row = $requestBooks->fetch(PDO::FETCH_ASSOC)) {
+        extract($row);
+        array_push($books, array(
+            'id' => $id,
+            'label' => $label
+        ));
+    }
     echo json_encode(array(
         'valid' => $details['pwd'] == $input->pwd,
         'user' => array(
             'username' => $details['username'],
-            'email' => $details['email']
+            'email' => $details['email'],
+            'books' => $books
         )
     ));
 } else {
