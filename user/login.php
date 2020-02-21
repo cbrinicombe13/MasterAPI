@@ -22,13 +22,13 @@ if($details) {
     extract($details);
 
     $book = new Book($pdo, $details['username']);
-    $requestBooks = $book->getBooks();
+    $requestBooks = $book->getLabels();
     $numBooks = $requestBooks->rowCount();
-    $books = array();
+    $labels = array();
 
     while($row = $requestBooks->fetch(PDO::FETCH_ASSOC)) {
         extract($row);
-        array_push($books, array(
+        array_push($labels, array(
             'id' => $id,
             'label' => $label
         ));
@@ -38,7 +38,7 @@ if($details) {
         'user' => array(
             'username' => $details['username'],
             'email' => $details['email'],
-            'books' => $books
+            'labels' => $labels
         )
     ));
 } else {
