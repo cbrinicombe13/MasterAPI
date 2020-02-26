@@ -1,34 +1,71 @@
 <?php
 
-include_once './User.php';
-
 class Contact {
     // DB Params:
     private $conn;
+    private $username;
 
     // Contact params:
-    public $bookID;
-    public $contactID;
+    public $belongsTo;
     public $firstName;
     public $lastName;
     public $occupation;
     public $phone;
     public $email;
-    public $address;
     
+    public function __construct($db, $username, $tName,
+                $firstName, $lastName, $occupation = '',
+                $phone = '', $email = '') {
+        $this->conn = $db;
+        $this->username = $username;
+        $this->belongsTo = $tName;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
+        $this->occupation = $occupation;
+        $this->phone = $phone;
+        $this->email = $email;
+    }
 
-    public function __construct($db,
-                $bookID, $contactID, $firstName, $lastName,
-                $occupation = '', $phone = '', $email = '', $address = []) {
-        $this->conn = $db; // Vital
-        $this->bookID = $bookID; // Required
-        $this->contactID = $contactID; // Required
-        $this->firstName = $firstName; // Required
-        $this->lastName = $lastName; // Required
-        $this->occupation = $occupation; // Optional
-        $this->phone = $phone; // Optional
-        $this->email = $email; // Optional
-        $this->address = $address; // Optional
+    public function createContact() {// NOT SAFE FOR INSERTION OF TABLE NAME
+        $query = 'INSERT INTO '.$this->username.'(
+            belongsTo, firstName, lastName, occupation, phone, email
+        ) VALUES(
+            :belongsTo, :firstName, :lastName, :occupation, :phone, :email 
+        )';
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                'belongsTo' => $this->belongsTo,
+                'firstName' => $this->firstName,
+                'lastName' => $this->lastName,
+                'occupation' => $this->occupation,
+                'phone' => $this->phone,
+                'email' => $this->email,
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            echo 'Contact could not be created: '.$e->getMessage();
+            return false;
+        }
+        
+    }
+
+    // Get single contact:
+    public function getSingleContact() {// NOT SAFE FOR INSERTION OF TABLE NAME
+        $query = 'SELECT * FROM '.$this->username.' WHERE 
+        belongsTo = :belongsTo AND firstName = :firstName AND lastName = :lastName';
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                'belongsTo' => $this->belongsTo,
+                'firstName' => $this->firstName,
+                'lastName' => $this->lastName
+            ]);
+            return $stmt;
+        } catch (PDOException $e) {
+            echo 'Could not read contact: '.$e->getMessage();
+            return false;
+        }
     }
     
 

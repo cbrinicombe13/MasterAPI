@@ -51,27 +51,4 @@ class Database {
 
     }
 
-    public function createBooksTable() {
-        if(isset($this->conn)) {
-            try {
-                $query = 'CREATE TABLE IF NOT EXISTS Books (
-                    id int(10) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                    label text(20) NOT NULL,
-                    allowAccess varchar(100) NOT NULL
-                )';
-                $this->conn->exec($query);
-                return true;
-            } catch(PDOException $e) {
-                echo json_encode(array(
-                    'error' => 'PDO error: '.$e->getMessage()
-                ));
-                return false;
-            }
-        } else {
-            echo json_encode(array(
-                'error' => 'No connection'
-            ));
-            return false;
-        }
-    }
 }

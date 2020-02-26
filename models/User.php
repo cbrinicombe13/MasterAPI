@@ -14,6 +14,16 @@ class User {
         $this->email = strip_tags($email);
     }
 
+    // Validate a username (no whitespace or dashes):
+    public function validUsername() {
+        $whitespace = strpos($this->username, ' ');
+        $dashes = strpos($this->username, '-');
+        if($whitespace || $dashes) {
+            return false;
+        }
+        return true;
+    }
+
     // Encapsulate user details:
     function getDetails() {
         return array(
@@ -23,22 +33,15 @@ class User {
         );
     }
 
-    // Commit all or nothing: 
-    function execAON($stmt, $params = []) {
-        $this->conn->beginTransaction();
-        $stmt->execute($params);
-        $this->conn->commit();
-    }
-
     // Read all users:
     function getUsers() {
         $query = 'SELECT * FROM Users';
-        $stmt = $this->conn->prepare($query);
         try {
-            self::execAON($stmt);
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
             return $stmt;
         } catch(PDOException $e) {
-            echo 'Could not read users: '.$e;
+            echo 'Could not read users: '.$e->getMessage();
             return false;
         }
     }
@@ -46,44 +49,57 @@ class User {
     // Read single user with username:
     function getSingleUser() {
         $query = 'SELECT * FROM Users WHERE username = :username';
-        $stmt = $this->conn->prepare($query);
+        
         try {
-            self::execAON($stmt, ['username' => $this->username]);
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute(['username' => $this->username]);
             return $stmt;
         } catch(PDOException $e) {
-            echo 'Could not read user '.$this->username.' : '.$e;
+            echo 'Could not read user '.$this->username.' : '.$e->getMessage();
+            return false;
+        }
+    }
+
+    // Get all books for user:
+    function getBooks() { // NOT SAFE FOR INSERTION OF TABLE NAME.
+        $query = 'SELECT * FROM '.$this->username;
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            return $stmt;
+        } catch(PDOException $e) {
+            echo json_encode(array(
+                'error' => 'PDO error: '.$e->getMessage()
+            ));
             return false;
         }
     }
 
     // New user:
-    function createUser() {
-        $query = 'INSERT INTO Users(username, pwd, email)
+    function createUser() { // NOT SAFE FOR INSERTION OF TABLE NAME.
+        $newUser = 'INSERT INTO Users(username, pwd, email)
                         VALUES(:username, :pwd, :email)';
-        $stmt = $this->conn->prepare($query);
+        $newTable = 'CREATE TABLE IF NOT EXISTS '.$this->username.' (
+            id int NOT NULL PRIMARY KEY AUTO_INCREMENT,
+            belongsTo text(100) NOT NULL,
+            firstName text(30) NOT NULL,
+            lastName text(50) NOT NULL,
+            occupation text(100),
+            phone varchar(30),
+            email varchar(200)
+            )';
         try {
-            self::execAON($stmt, [
+            $stmt = $this->conn->prepare($newUser);
+            $this->conn->beginTransaction();
+            $stmt->execute([
                 'username' => $this->username,
                 'pwd' => $this->pwd,
                 'email' => $this->email]);
-                return true;
-        } catch (PDOException $e) {
-            echo 'User could not be created: '.$e;
-            return false;
-        }
-    }
-
-    // Delete user:
-    function deleteUser() {
-        $query = 'DELETE FROM Users WHERE username = :username';
-        $stmt = $this->conn->prepare($query);
-        try {
-            self::execAON($stmt, [
-                'username' => $this->username
-            ]);
+            $this->conn->exec($newTable);
+            $this->conn->commit();
             return true;
         } catch (PDOException $e) {
-            echo 'User could not be deleted: '.$e;
+            echo 'User could not be created: '.$e->getMessage();
             return false;
         }
     }

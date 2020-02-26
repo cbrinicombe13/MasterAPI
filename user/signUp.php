@@ -16,13 +16,19 @@ $pdo = $db->connect();
 
 $input = json_decode(file_get_contents('php://input'));
 $user = new User($pdo, $input->username, $input->pwd, $input->email);
+if(!$user->validUsername()) {
+    echo json_encode(array(
+        'error' => 'Username must only contain letters and numbers.'
+    ));
+    return;
+}
 $requestedUser = $user->getSingleUser()->fetch(PDO::FETCH_ASSOC);
 
 if($requestedUser) {
     echo json_encode(array(
         'error' => 'Username already exists.'
     ));
-    return; // Somehow an empty row is inserted??
+    return;
 } else {
     if($user->createUser()) {
         $mail = new Mail();
@@ -32,7 +38,7 @@ if($requestedUser) {
         ));
     } else {
         echo json_encode(array(
-            'error' => 'Could not add user.'
+            'error' => 'Could not create user.'
         ));
     }
 }

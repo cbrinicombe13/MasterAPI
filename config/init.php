@@ -13,8 +13,7 @@ $pdo = $db->connect();
 
 if(isset($pdo)) {
     echo json_encode(array(
-        'usersTableCreated' => $db->createUserTable(),
-        'booksTableCreated' => $db->createBooksTable()
+        'usersTableCreated' => $db->createUserTable()
     ));
 } else {
     echo json_encode(array(
