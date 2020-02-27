@@ -46,7 +46,7 @@ if ($userExists) {
 
         // Get copy of 'belongsTo' column which contains unique 'labels' and
         // group contacts by book name:
-        $labels = array_unique($belongsToArr);
+        $labels = array_values(array_unique($belongsToArr));
         $newBooksArr = array();
         foreach ($labels as $label) {
             $currentLabelBooks = array();

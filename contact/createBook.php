@@ -12,20 +12,19 @@ header('Access-Control-Allow-Headers: Access-Control-Allow-Headers, Access-Contr
 $db = new Database();
 $pdo = $db->connect();
 
-// Recieve new contact info:
+// Recieve new book name and first contact info:
 $input = json_decode(file_get_contents('php://input'));
-
 $contact = new Contact($pdo, $input->username, $input->belongsTo ,$input->firstName,
             $input->lastName, $input->occupation, $input->phone
             ,$input->email);
-$checkContact = $contact->getSingleContact()->fetch(PDO::FETCH_ASSOC);
+$checkBook = $contact->getSingleBook()->fetch(PDO::FETCH_ASSOC);
 
-if(!$checkContact) {
+if(!$checkBook) {
     echo json_encode(array(
-        'created' => $contact->createContact()
+        'created' => $contact->createBook()
     ));
 } else {
     echo json_encode(array(
-        'error' => 'Contact already exists in this book.'
+        'error' => 'Book already exists'
     ));
 }
